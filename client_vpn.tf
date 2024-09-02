@@ -28,6 +28,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   description               = "${var.client_vpn_name} VPN endpoint"
   server_certificate_arn    = var.server_certificate_arn
   client_cidr_block         = var.client_ipv4_cidr
+  vpc_id                    = var.vpc_id
   authentication_options {
     type                        = "federated-authentication"
     saml_provider_arn           = var.identity_provider_arn
