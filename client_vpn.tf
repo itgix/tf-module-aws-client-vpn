@@ -35,7 +35,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   }
   connection_log_options {
     enabled      = var.enable_connection_logs
-    cloudwatch_log_group  = aws_cloudwatch_log_group.client_vpn_logs[count.index].name
+    cloudwatch_log_group  = var.enable_connection_logs ? aws_cloudwatch_log_group.client_vpn_logs[0].name : null
     cloudwatch_log_stream = "${var.client_vpn_name}-stream"
   }
   dns_servers               = ["1.1.1.1", "1.0.0.1"]
@@ -46,21 +46,23 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
 }
 
 resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
-  for_each = toset(var.target_networks)
+  count = length(var.target_networks)
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
-  subnet_id              = each.key
+  subnet_id              = var.target_networks[count.index]
 }
 
 resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
-  for_each = toset(var.target_networks)
+  count = length(var.target_networks)
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
   destination_cidr_block = "0.0.0.0/0"
-  target_subnet_id       = each.key
+  target_vpc_subnet_id   = var.target_networks[count.index]
 }
 
 resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rule" {
+  count = 1
+
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
   target_network_cidr    = "0.0.0.0/0"
   access_group_id        = var.access_group_id
