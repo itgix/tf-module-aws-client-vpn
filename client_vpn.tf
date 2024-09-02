@@ -1,0 +1,68 @@
+resource "aws_security_group" "client_vpn_sg" {
+  name        = "${var.client_vpn_name}-sg"
+  description = "Security group for the Client VPN endpoint"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "Allow UDP 443 inbound from anywhere"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_cloudwatch_log_group" "client_vpn_logs" {
+  count = var.enable_connection_logs ? 1 : 0
+  name  = "${var.client_vpn_name}-logs"
+}
+
+resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
+  description               = "${var.client_vpn_name} VPN endpoint"
+  server_certificate_arn    = var.server_certificate_arn
+  client_cidr_block         = var.client_ipv4_cidr
+  authentication_options {
+    type                        = "federated-authentication"
+    saml_provider_arn           = var.identity_provider_arn
+    self_service_saml_provider_arn = var.identity_provider_arn
+  }
+  connection_log_options {
+    enabled      = var.enable_connection_logs
+    cloudwatch_log_group  = aws_cloudwatch_log_group.client_vpn_logs[count.index].name
+    cloudwatch_log_stream = "${var.client_vpn_name}-stream"
+  }
+  dns_servers               = ["1.1.1.1", "1.0.0.1"]
+  split_tunnel              = var.split_tunnel
+  transport_protocol        = "udp"
+  vpn_port                  = 443
+  security_group_ids        = [aws_security_group.client_vpn_sg.id]
+}
+
+resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
+  for_each = toset(var.target_networks)
+
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
+  subnet_id              = each.key
+}
+
+resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
+  for_each = toset(var.target_networks)
+
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
+  destination_cidr_block = "0.0.0.0/0"
+  target_subnet_id       = each.key
+}
+
+resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rule" {
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
+  target_network_cidr    = "0.0.0.0/0"
+  access_group_id        = var.access_group_id
+  authorize_all_groups   = false
+}
