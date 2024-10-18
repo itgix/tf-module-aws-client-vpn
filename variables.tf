@@ -42,3 +42,8 @@ variable "client_ipv4_cidr" {
   description = "The IPv4 CIDR block to assign to the client VPN endpoint."
   type        = string
 }
+
+variable "destination_cidr_block" {
+  description = "The CIDR block of the destination route."
+  type        = string
+}

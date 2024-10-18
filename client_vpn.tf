@@ -25,25 +25,25 @@ resource "aws_cloudwatch_log_group" "client_vpn_logs" {
 }
 
 resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
-  description               = "${var.client_vpn_name} VPN endpoint"
-  server_certificate_arn    = var.server_certificate_arn
-  client_cidr_block         = var.client_ipv4_cidr
-  vpc_id                    = var.vpc_id
+  description            = "${var.client_vpn_name} VPN endpoint"
+  server_certificate_arn = var.server_certificate_arn
+  client_cidr_block      = var.client_ipv4_cidr
+  vpc_id                 = var.vpc_id
   authentication_options {
-    type                        = "federated-authentication"
-    saml_provider_arn           = var.identity_provider_arn
+    type                           = "federated-authentication"
+    saml_provider_arn              = var.identity_provider_arn
     self_service_saml_provider_arn = var.identity_provider_arn
   }
   connection_log_options {
-    enabled      = var.enable_connection_logs
+    enabled               = var.enable_connection_logs
     cloudwatch_log_group  = var.enable_connection_logs ? aws_cloudwatch_log_group.client_vpn_logs[0].name : null
     cloudwatch_log_stream = "${var.client_vpn_name}-stream"
   }
-  dns_servers               = ["1.1.1.1", "1.0.0.1"]
-  split_tunnel              = var.split_tunnel
-  transport_protocol        = "udp"
-  vpn_port                  = 443
-  security_group_ids        = [aws_security_group.client_vpn_sg.id]
+  dns_servers        = ["1.1.1.1", "1.0.0.1"]
+  split_tunnel       = var.split_tunnel
+  transport_protocol = "udp"
+  vpn_port           = 443
+  security_group_ids = [aws_security_group.client_vpn_sg.id]
 }
 
 resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
@@ -57,7 +57,7 @@ resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
   count = length(var.target_networks)
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
-  destination_cidr_block = "0.0.0.0/0"
+  destination_cidr_block = var.split_tunnel ? var.destination_cidr_block : "0.0.0.0/0"
   target_vpc_subnet_id   = var.target_networks[count.index]
 }
 
