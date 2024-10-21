@@ -45,5 +45,5 @@ variable "client_ipv4_cidr" {
 
 variable "destination_cidr_block" {
   description = "The CIDR block of the destination route."
-  type        = string
+  type        = list(string)
 }

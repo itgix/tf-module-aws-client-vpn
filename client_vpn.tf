@@ -54,11 +54,11 @@ resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
 }
 
 resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
-  count = length(var.target_networks)
+  for_each = { for idx, cidr_subnet_pair in setproduct(var.destination_cidr_block, var.target_networks) : "${cidr_subnet_pair[0]}_${cidr_subnet_pair[1]}" => cidr_subnet_pair }
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
-  destination_cidr_block = var.split_tunnel ? var.destination_cidr_block : "0.0.0.0/0"
-  target_vpc_subnet_id   = var.target_networks[count.index]
+  destination_cidr_block = var.split_tunnel ? each.value[0] : "0.0.0.0/0"
+  target_vpc_subnet_id   = each.value[1]
 }
 
 resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rule" {
