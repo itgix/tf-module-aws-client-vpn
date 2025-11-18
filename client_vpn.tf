@@ -48,6 +48,13 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   tags = {
     Name = "ITGix Landing Zone - ${var.client_vpn_name}"
   }
+
+  lifecycle {
+    // Terraform keeps detecting this as a state drift no matter how manny times we apply it
+    ignore_changes = [
+      connection_log_options[0].cloudwatch_log_stream,
+    ]
+  }
 }
 
 resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
