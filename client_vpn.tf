@@ -44,6 +44,10 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   transport_protocol = "udp"
   vpn_port           = 443
   security_group_ids = [aws_security_group.client_vpn_sg.id]
+
+  tags = {
+    Name = "ITGix Landing Zone - ${var.client_vpn_name}"
+  }
 }
 
 resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
