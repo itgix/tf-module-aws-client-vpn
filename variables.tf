@@ -47,3 +47,8 @@ variable "destination_cidr_block" {
   description = "The CIDR block of the destination route."
   type        = list(string)
 }
+
+variable "dns_servers" {
+  description = "List of DNS servers to be pushed to the VPN clients"
+  type        = list(string)
+}

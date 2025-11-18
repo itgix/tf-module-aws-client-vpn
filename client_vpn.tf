@@ -39,7 +39,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
     cloudwatch_log_group  = var.enable_connection_logs ? aws_cloudwatch_log_group.client_vpn_logs[0].name : null
     cloudwatch_log_stream = "${var.client_vpn_name}-stream"
   }
-  dns_servers        = ["1.1.1.1", "1.0.0.1"]
+  dns_servers        = var.dns_servers // e.g. ["1.1.1.1", "1.0.0.1"]
   split_tunnel       = var.split_tunnel
   transport_protocol = "udp"
   vpn_port           = 443
