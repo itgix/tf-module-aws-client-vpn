@@ -22,6 +22,13 @@ resource "aws_security_group" "client_vpn_sg" {
 resource "aws_cloudwatch_log_group" "client_vpn_logs" {
   count = var.enable_connection_logs ? 1 : 0
   name  = "${var.client_vpn_name}-logs"
+  retention_in_days = var.client_vpn_logs_cloudwatch_log_group_retention_in_days
+   lifecycle {
+      ignore_changes = [
+         retention_in_days
+      ]
+   }
+
 }
 
 resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
