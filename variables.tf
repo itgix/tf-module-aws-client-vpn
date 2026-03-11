@@ -52,3 +52,9 @@ variable "dns_servers" {
   description = "List of DNS servers to be pushed to the VPN clients"
   type        = list(string)
 }
+
+variable "client_vpn_logs_cloudwatch_log_group_retention_in_days" {
+  description = "Specifies the number of days you want to retain log events in the specified log group for client VPN logs"
+  type        = number
+  default     = 365
+}
