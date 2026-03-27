@@ -79,10 +79,24 @@ resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
   target_vpc_subnet_id   = each.value[1]
 }
 
+# Legacy single-rule resource (backward compatible, no state move needed)
+# Active when access_group_id is set and authorization_rules is not
 resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rule" {
-  count = 1
+  count = var.authorization_rules == null ? 1 : 0
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
   target_network_cidr    = "0.0.0.0/0"
   access_group_id        = var.access_group_id
+  authorize_all_groups   = var.access_group_id == null ? true : null
+}
+
+# New multi-rule resource, active when authorization_rules is explicitly set
+resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rules" {
+  for_each = var.authorization_rules != null ? { for idx, rule in var.authorization_rules : idx => rule } : {}
+
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
+  target_network_cidr    = each.value.target_network_cidr
+  access_group_id        = each.value.access_group_id
+  authorize_all_groups   = each.value.authorize_all_groups
+  description            = each.value.description
 }
