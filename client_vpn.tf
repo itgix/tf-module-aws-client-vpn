@@ -57,7 +57,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   }
 
   lifecycle {
-    // Terraform keeps detecting this as a state drift no matter how manny times we apply it
+    // Terraform keeps detecting this as a state drift no matter how many times we apply it
     ignore_changes = [
       connection_log_options[0].cloudwatch_log_stream,
     ]
