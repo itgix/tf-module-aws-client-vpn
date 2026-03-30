@@ -62,6 +62,8 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
       connection_log_options[0].cloudwatch_log_stream,
     ]
   }
+
+  depends_on = [aws_cloudwatch_log_group.client_vpn_logs]
 }
 
 resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
