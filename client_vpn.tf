@@ -77,6 +77,8 @@ resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
   destination_cidr_block = var.split_tunnel ? each.value[0] : "0.0.0.0/0"
   target_vpc_subnet_id   = each.value[1]
+
+  depends_on = [aws_ec2_client_vpn_network_association.client_vpn_association]
 }
 
 # Legacy single-rule resource (backward compatible, no state move needed)
