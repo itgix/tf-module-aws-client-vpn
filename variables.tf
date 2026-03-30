@@ -28,12 +28,6 @@ variable "target_networks" {
   type        = list(string)
 }
 
-variable "access_group_id" {
-  description = "DEPRECATED: Use authorization_rules instead. The ID of the access group for the default authorization rule (0.0.0.0/0)."
-  type        = string
-  default     = null
-}
-
 variable "identity_provider_arn" {
   description = "The ARN of the IAM Identity Provider."
   type        = string
