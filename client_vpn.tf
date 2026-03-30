@@ -31,6 +31,12 @@ resource "aws_cloudwatch_log_group" "client_vpn_logs" {
 
 }
 
+resource "aws_cloudwatch_log_stream" "client_vpn_logs" {
+  count          = var.enable_connection_logs ? 1 : 0
+  name           = "${var.client_vpn_name}-stream"
+  log_group_name = aws_cloudwatch_log_group.client_vpn_logs[0].name
+}
+
 resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   description            = "${var.client_vpn_name} VPN endpoint"
   server_certificate_arn = var.server_certificate_arn
@@ -63,7 +69,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
     ]
   }
 
-  depends_on = [aws_cloudwatch_log_group.client_vpn_logs]
+  depends_on = [aws_cloudwatch_log_group.client_vpn_logs, aws_cloudwatch_log_stream.client_vpn_logs]
 }
 
 resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
