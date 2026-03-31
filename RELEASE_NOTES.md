@@ -1,6 +1,6 @@
 # Release Notes
 
-## Breaking Changes
+## Breaking Changes in v4.0.0
 
 ### Authorization Rules
 
@@ -145,5 +145,4 @@ authorization_rules = [
 **Key differences:**
 - No more `for_each` — a single module call replaces the per-environment map.
 - `access_group_id` moves from a top-level variable into the `authorization_rules` list, allowing per-environment group control from a single VPN.
-- `destination_cidr_block` now includes all environment CIDRs so the VPN can route to each one.
 - The VPN is deployed in the shared-services account with target network associations to subnets that have connectivity (e.g. via Transit Gateway) to the workload VPCs.
