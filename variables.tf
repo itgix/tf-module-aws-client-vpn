@@ -70,8 +70,9 @@ variable "authorization_rules" {
   validation {
     condition = alltrue([
       for rule in var.authorization_rules :
-      (rule.access_group_id != null) == (rule.authorize_all_groups == false)
+      (rule.access_group_id != null && rule.authorize_all_groups != true) ||
+      (rule.access_group_id == null && rule.authorize_all_groups != false)
     ])
-    error_message = "Each authorization rule must specify either access_group_id or authorize_all_groups = true, but not both."
+    error_message = "When access_group_id is set, authorize_all_groups must be false or null. When access_group_id is null, authorize_all_groups must be true or null."
   }
 }
