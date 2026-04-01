@@ -31,6 +31,12 @@ resource "aws_cloudwatch_log_group" "client_vpn_logs" {
 
 }
 
+resource "aws_cloudwatch_log_stream" "client_vpn_logs" {
+  count          = var.enable_connection_logs ? 1 : 0
+  name           = "${var.client_vpn_name}-stream"
+  log_group_name = aws_cloudwatch_log_group.client_vpn_logs[0].name
+}
+
 resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   description            = "${var.client_vpn_name} VPN endpoint"
   server_certificate_arn = var.server_certificate_arn
@@ -44,7 +50,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   connection_log_options {
     enabled               = var.enable_connection_logs
     cloudwatch_log_group  = var.enable_connection_logs ? aws_cloudwatch_log_group.client_vpn_logs[0].name : null
-    cloudwatch_log_stream = "${var.client_vpn_name}-stream"
+    cloudwatch_log_stream = var.enable_connection_logs ? aws_cloudwatch_log_stream.client_vpn_logs[0].name : null
   }
   dns_servers        = var.dns_servers // e.g. ["1.1.1.1", "1.0.0.1"]
   split_tunnel       = var.split_tunnel
@@ -57,7 +63,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   }
 
   lifecycle {
-    // Terraform keeps detecting this as a state drift no matter how manny times we apply it
+    // Terraform keeps detecting this as a state drift no matter how many times we apply it
     ignore_changes = [
       connection_log_options[0].cloudwatch_log_stream,
     ]
@@ -77,12 +83,19 @@ resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
   destination_cidr_block = var.split_tunnel ? each.value[0] : "0.0.0.0/0"
   target_vpc_subnet_id   = each.value[1]
+
+  depends_on = [aws_ec2_client_vpn_network_association.client_vpn_association]
 }
 
-resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rule" {
-  count = 1
+# Authorization rules for the Client VPN endpoint
+resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rules" {
+  for_each = { for idx, rule in var.authorization_rules : idx => rule }
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
-  target_network_cidr    = "0.0.0.0/0"
-  access_group_id        = var.access_group_id
+  target_network_cidr    = each.value.target_network_cidr
+  access_group_id        = each.value.access_group_id
+  authorize_all_groups   = each.value.authorize_all_groups
+  description            = each.value.description
+
+  depends_on = [aws_ec2_client_vpn_network_association.client_vpn_association]
 }
