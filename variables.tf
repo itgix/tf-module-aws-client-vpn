@@ -81,3 +81,9 @@ variable "self_service_portal" {
   type        = string
   default     = "disabled"
 }
+
+variable "self_service_identity_provider_arn" {
+  description = "The ARN of the IAM SAML Identity Provider for the self-service portal. Required when self_service_portal is enabled."
+  type        = string
+  default     = null
+}

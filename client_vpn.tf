@@ -45,7 +45,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   authentication_options {
     type                           = "federated-authentication"
     saml_provider_arn              = var.identity_provider_arn
-    self_service_saml_provider_arn = var.identity_provider_arn
+    self_service_saml_provider_arn = var.self_service_identity_provider_arn
   }
   connection_log_options {
     enabled               = var.enable_connection_logs
