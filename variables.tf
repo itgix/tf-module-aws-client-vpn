@@ -75,3 +75,9 @@ variable "authorization_rules" {
     error_message = "Each authorization rule must specify either access_group_id or authorize_all_groups = true, but not both."
   }
 }
+
+variable "self_service_portal" {
+  description = "Enable or disable the self-service portal for the Client VPN endpoint. Valid values: enabled, disabled."
+  type        = string
+  default     = "disabled"
+}
