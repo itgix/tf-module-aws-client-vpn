@@ -20,14 +20,14 @@ resource "aws_security_group" "client_vpn_sg" {
 }
 
 resource "aws_cloudwatch_log_group" "client_vpn_logs" {
-  count = var.enable_connection_logs ? 1 : 0
-  name  = "${var.client_vpn_name}-logs"
+  count             = var.enable_connection_logs ? 1 : 0
+  name              = "${var.client_vpn_name}-logs"
   retention_in_days = var.client_vpn_logs_cloudwatch_log_group_retention_in_days
-   lifecycle {
-      ignore_changes = [
-         retention_in_days
-      ]
-   }
+  lifecycle {
+    ignore_changes = [
+      retention_in_days
+    ]
+  }
 
 }
 
@@ -55,9 +55,9 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   self_service_portal = var.self_service_portal
   dns_servers         = var.dns_servers // e.g. ["1.1.1.1", "1.0.0.1"]
   split_tunnel        = var.split_tunnel
-  transport_protocol = "udp"
-  vpn_port           = 443
-  security_group_ids = [aws_security_group.client_vpn_sg.id]
+  transport_protocol  = "udp"
+  vpn_port            = 443
+  security_group_ids  = [aws_security_group.client_vpn_sg.id]
 
   tags = {
     Name = "ITGix Landing Zone - ${var.client_vpn_name}"
@@ -79,11 +79,12 @@ resource "aws_ec2_client_vpn_network_association" "client_vpn_association" {
 }
 
 resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
-  for_each = { for idx, cidr_subnet_pair in setproduct(var.destination_cidr_block, var.target_networks) : "${cidr_subnet_pair[0]}_${cidr_subnet_pair[1]}" => cidr_subnet_pair }
+  for_each = { for idx, route_subnet_pair in setproduct(var.destination_cidr_block, var.target_networks) : "${route_subnet_pair[0].cidr}_${route_subnet_pair[1]}" => route_subnet_pair }
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
-  destination_cidr_block = var.split_tunnel ? each.value[0] : "0.0.0.0/0"
+  destination_cidr_block = var.split_tunnel ? each.value[0].cidr : "0.0.0.0/0"
   target_vpc_subnet_id   = each.value[1]
+  description            = each.value[0].description
 
   depends_on = [aws_ec2_client_vpn_network_association.client_vpn_association]
 }

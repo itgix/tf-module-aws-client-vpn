@@ -39,8 +39,11 @@ variable "client_ipv4_cidr" {
 }
 
 variable "destination_cidr_block" {
-  description = "The CIDR block of the destination route."
-  type        = list(string)
+  description = "List of destination routes for the Client VPN endpoint. Each entry specifies the destination CIDR and an optional route description."
+  type = list(object({
+    cidr        = string
+    description = optional(string, null)
+  }))
 }
 
 variable "dns_servers" {

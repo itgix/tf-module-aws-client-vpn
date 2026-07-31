@@ -26,10 +26,17 @@ Part of the [ITGix AWS Landing Zone](https://itgix.com/itgix-landing-zone/).
 | `target_networks` | List of subnet IDs for target network associations | `list(string)` | — | yes |
 | `identity_provider_arn` | The ARN of the IAM Identity Provider | `string` | — | yes |
 | `client_ipv4_cidr` | The IPv4 CIDR block to assign to the client VPN endpoint | `string` | — | yes |
-| `destination_cidr_block` | The CIDR blocks of the destination routes | `list(string)` | — | yes |
+| `destination_cidr_block` | List of destination routes (see below) | `list(object)` | — | yes |
 | `dns_servers` | List of DNS servers to be pushed to the VPN clients | `list(string)` | — | yes |
 | `authorization_rules` | List of Objects that define authorization rules (see below) | `list(object)` | See below | no |
 | `client_vpn_logs_cloudwatch_log_group_retention_in_days` | Retention period of the logs in the CloudWatch Log Group | `number` | 365 | no |
+
+### `destination_cidr_block` Object
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| `cidr` | The destination CIDR block of the route | `string` | — | yes |
+| `description` | A description for the route | `string` | `null` | no |
 
 ### `authorization_rules` Object
 
@@ -63,7 +70,12 @@ module "client_vpn" {
   target_networks        = ["subnet-aaa111", "subnet-bbb222"]
   identity_provider_arn  = "arn:aws:iam::123456789012:saml-provider/my-idp"
   client_ipv4_cidr       = "10.100.0.0/16"
-  destination_cidr_block = ["10.0.0.0/8"]
+  destination_cidr_block = [
+    {
+      cidr        = "10.0.0.0/8"
+      description = "Allow access to internal networks"
+    }
+  ]
   dns_servers            = ["10.0.0.2"]
   authorization_rules    = [
     {
