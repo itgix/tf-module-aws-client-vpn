@@ -77,6 +77,13 @@ variable "authorization_rules" {
     ])
     error_message = "Each authorization rule must specify either access_group_id or authorize_all_groups = true, but not both."
   }
+
+  validation {
+    condition = length(var.authorization_rules) == length(distinct([
+      for rule in var.authorization_rules : "${rule.target_network_cidr}_${coalesce(rule.access_group_id, "all")}"
+    ]))
+    error_message = "Each combination of target_network_cidr and access_group_id (or authorize_all_groups) must be unique."
+  }
 }
 
 variable "self_service_portal" {

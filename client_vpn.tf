@@ -90,8 +90,9 @@ resource "aws_ec2_client_vpn_route" "client_vpn_routes" {
 }
 
 # Authorization rules for the Client VPN endpoint
+# Keyed by CIDR + group (not list index) so adding/reordering rules doesn't replace others
 resource "aws_ec2_client_vpn_authorization_rule" "client_vpn_auth_rules" {
-  for_each = { for idx, rule in var.authorization_rules : idx => rule }
+  for_each = { for rule in var.authorization_rules : "${rule.target_network_cidr}_${coalesce(rule.access_group_id, "all")}" => rule }
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
   target_network_cidr    = each.value.target_network_cidr
