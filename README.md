@@ -49,6 +49,8 @@ Each object in the list accepts the following attributes. Either `access_group_i
 | `authorize_all_groups` | Set to `true` to authorize all groups | `bool` | `null` | no |
 | `description` | A description for the authorization rule | `string` | `null` | no |
 
+Rules are keyed by `<target_network_cidr>_<access_group_id>` (or `_all`), so order doesn't matter. Upgrading from v4.2.0 or earlier (index keys) requires a `terraform state mv` of each rule to its new key to avoid recreation.
+
 ## Outputs
 
 | Name | Description |
